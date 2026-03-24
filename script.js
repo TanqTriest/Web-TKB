@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const API_BASE = "https://web-tkb-pro.onrender.com/api";
+  const API_BASE = "https://web-tkb.onrender.com/api";
 
   const DAY_MAP = {
     2: "Thứ 2",
