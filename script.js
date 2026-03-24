@@ -24,6 +24,7 @@
     keyword: "",
     sortBy: "course_code",
     sortOrder: "asc"
+    scheduleDrafts: [],
   };
 
   const els = {
@@ -48,10 +49,8 @@
     lecturer: document.getElementById("lecturer"),
     groupName: document.getElementById("groupName"),
     practiceGroup: document.getElementById("practiceGroup"),
-    dayOfWeek: document.getElementById("dayOfWeek"),
-    startPeriod: document.getElementById("startPeriod"),
-    duration: document.getElementById("duration"),
-    roomCode: document.getElementById("roomCode"),
+    addScheduleBtn: document.getElementById("addScheduleBtn"),
+    scheduleRows: document.getElementById("scheduleRows"),
     courseColor: document.getElementById("courseColor"),
     note: document.getElementById("note"),
     courseSubmitBtn: document.getElementById("courseSubmitBtn"),
@@ -95,6 +94,64 @@
   };
 
   function escapeHtml(value) {
+    function createEmptySchedule() {
+      return {
+        dayOfWeek: 2,
+        startPeriod: state.slots[0]?.period || 1,
+        duration: 2,
+        roomCode: ""
+      };
+    }
+    function renderScheduleRows() {
+      if (!els.scheduleRows) return;
+    
+      if (!state.scheduleDrafts.length) {
+        state.scheduleDrafts = [createEmptySchedule()];
+      }
+    
+      els.scheduleRows.innerHTML = state.scheduleDrafts.map((s, i) => `
+        <div class="schedule-row">
+          <div class="schedule-row-head">
+            <div>Buổi ${i + 1}</div>
+            <button type="button" data-remove="${i}">Xóa</button>
+          </div>
+    
+          <div>
+            Thứ:
+            <select data-i="${i}" data-f="dayOfWeek">
+              ${Object.entries(DAY_MAP).map(([k, v]) =>
+                `<option value="${k}" ${Number(s.dayOfWeek) === Number(k) ? "selected" : ""}>${v}</option>`
+              ).join("")}
+            </select>
+    
+            Tiết:
+            <input type="number" value="${s.startPeriod}" data-i="${i}" data-f="startPeriod" />
+    
+            Số tiết:
+            <input type="number" value="${s.duration}" data-i="${i}" data-f="duration" />
+    
+            Phòng:
+            <input type="text" value="${s.roomCode}" data-i="${i}" data-f="roomCode" />
+          </div>
+        </div>
+      `).join("");
+    
+      els.scheduleRows.querySelectorAll("[data-f]").forEach(el => {
+        el.addEventListener("input", e => {
+          const i = e.target.dataset.i;
+          const f = e.target.dataset.f;
+          state.scheduleDrafts[i][f] = e.target.value;
+        });
+      });
+    
+      els.scheduleRows.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.onclick = () => {
+          state.scheduleDrafts.splice(btn.dataset.remove, 1);
+          renderScheduleRows();
+        };
+      });
+    }
+    
     return String(value ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
@@ -490,14 +547,12 @@
       practiceGroup: els.practiceGroup.value.trim(),
       color: els.courseColor.value,
       note: els.note.value.trim(),
-      schedules: [
-        {
-          dayOfWeek: Number(els.dayOfWeek.value),
-          startPeriod: Number(els.startPeriod.value),
-          duration: Number(els.duration.value),
-          roomCode: els.roomCode.value.trim()
-        }
-      ]
+      schedules: state.scheduleDrafts.map(s => ({
+        dayOfWeek: Number(s.dayOfWeek),
+        startPeriod: Number(s.startPeriod),
+        duration: Number(s.duration),
+        roomCode: s.roomCode
+      }))
     };
   }
 
@@ -507,6 +562,8 @@
     els.duration.value = 2;
     els.courseColor.value = "#2563eb";
     els.courseSubmitBtn.textContent = "Lưu lớp học phần";
+    state.scheduleDrafts = [createEmptySchedule()];
+    renderScheduleRows();
   }
 
   function getCourseById(id) {
@@ -735,7 +792,12 @@
       state.theme = state.theme === "dark" ? "light" : "dark";
       applyTheme();
     });
-
+    
+    els.addScheduleBtn.addEventListener("click", () => {
+      state.scheduleDrafts.push(createEmptySchedule());
+      renderScheduleRows();
+    });
+    
     els.switchModeBtn.addEventListener("click", async () => {
       if (!state.currentUser) {
         showToast("Bạn cần đăng nhập trước.", "warning");
@@ -811,8 +873,10 @@
     await loadMe();
     applyAuthUI();
     applyMode();
+    state.scheduleDrafts = [createEmptySchedule()];
     await reloadAppData();
-
+    renderScheduleRows();
+    
     if (state.currentUser && state.currentUser.role === "admin" && state.mode === "admin") {
       await loadConflicts();
     }
