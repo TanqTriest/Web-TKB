@@ -23,7 +23,7 @@
     selectedCourses: [],
     keyword: "",
     sortBy: "course_code",
-    sortOrder: "asc"
+    sortOrder: "asc",
     scheduleDrafts: [],
   };
 
@@ -94,71 +94,72 @@
   };
 
   function escapeHtml(value) {
-    function createEmptySchedule() {
-      return {
-        dayOfWeek: 2,
-        startPeriod: state.slots[0]?.period || 1,
-        duration: 2,
-        roomCode: ""
-      };
-    }
-    function renderScheduleRows() {
-      if (!els.scheduleRows) return;
-    
-      if (!state.scheduleDrafts.length) {
-        state.scheduleDrafts = [createEmptySchedule()];
-      }
-    
-      els.scheduleRows.innerHTML = state.scheduleDrafts.map((s, i) => `
-        <div class="schedule-row">
-          <div class="schedule-row-head">
-            <div>Buổi ${i + 1}</div>
-            <button type="button" data-remove="${i}">Xóa</button>
-          </div>
-    
-          <div>
-            Thứ:
-            <select data-i="${i}" data-f="dayOfWeek">
-              ${Object.entries(DAY_MAP).map(([k, v]) =>
-                `<option value="${k}" ${Number(s.dayOfWeek) === Number(k) ? "selected" : ""}>${v}</option>`
-              ).join("")}
-            </select>
-    
-            Tiết:
-            <input type="number" value="${s.startPeriod}" data-i="${i}" data-f="startPeriod" />
-    
-            Số tiết:
-            <input type="number" value="${s.duration}" data-i="${i}" data-f="duration" />
-    
-            Phòng:
-            <input type="text" value="${s.roomCode}" data-i="${i}" data-f="roomCode" />
-          </div>
-        </div>
-      `).join("");
-    
-      els.scheduleRows.querySelectorAll("[data-f]").forEach(el => {
-        el.addEventListener("input", e => {
-          const i = e.target.dataset.i;
-          const f = e.target.dataset.f;
-          state.scheduleDrafts[i][f] = e.target.value;
-        });
-      });
-    
-      els.scheduleRows.querySelectorAll("[data-remove]").forEach(btn => {
-        btn.onclick = () => {
-          state.scheduleDrafts.splice(btn.dataset.remove, 1);
-          renderScheduleRows();
-        };
-      });
-    }
-    
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function createEmptySchedule() {
+  return {
+    dayOfWeek: 2,
+    startPeriod: state.slots[0]?.period || 1,
+    duration: 2,
+    roomCode: ""
+  };
+}
+
+function renderScheduleRows() {
+  if (!els.scheduleRows) return;
+
+  if (!state.scheduleDrafts.length) {
+    state.scheduleDrafts = [createEmptySchedule()];
   }
+
+  els.scheduleRows.innerHTML = state.scheduleDrafts.map((s, i) => `
+    <div class="schedule-row">
+      <div class="schedule-row-head">
+        <div>Buổi ${i + 1}</div>
+        <button type="button" data-remove="${i}">Xóa</button>
+      </div>
+
+      <div>
+        Thứ:
+        <select data-i="${i}" data-f="dayOfWeek">
+          ${Object.entries(DAY_MAP).map(([k, v]) =>
+            `<option value="${k}" ${Number(s.dayOfWeek) === Number(k) ? "selected" : ""}>${v}</option>`
+          ).join("")}
+        </select>
+
+        Tiết:
+        <input type="number" value="${s.startPeriod}" data-i="${i}" data-f="startPeriod" />
+
+        Số tiết:
+        <input type="number" value="${s.duration}" data-i="${i}" data-f="duration" />
+
+        Phòng:
+        <input type="text" value="${s.roomCode}" data-i="${i}" data-f="roomCode" />
+      </div>
+    </div>
+  `).join("");
+
+  els.scheduleRows.querySelectorAll("[data-f]").forEach(el => {
+    el.addEventListener("input", e => {
+      const i = e.target.dataset.i;
+      const f = e.target.dataset.f;
+      state.scheduleDrafts[i][f] = e.target.value;
+    });
+  });
+
+  els.scheduleRows.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.onclick = () => {
+      state.scheduleDrafts.splice(Number(btn.dataset.remove), 1);
+      renderScheduleRows();
+    };
+  });
+}
 
   function showToast(message, type = "success") {
     const toast = document.createElement("div");
