@@ -631,3 +631,70 @@ tbody tr:hover {
     overflow: visible;
   }
 }
+.schedule-builder-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.schedule-rows {
+  display: grid;
+  gap: 12px;
+}
+
+.schedule-row {
+  border: 1px solid var(--border);
+  background: rgba(37, 99, 235, 0.04);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.schedule-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.schedule-row-title {
+  font-weight: 800;
+}
+
+.schedule-row-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr;
+  gap: 12px;
+}
+
+.remove-schedule-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.course-schedule-list {
+  display: grid;
+  gap: 8px;
+}
+
+.course-schedule-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(100, 116, 139, 0.06);
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .schedule-row-grid {
+    grid-template-columns: 1fr;
+  }
+}
