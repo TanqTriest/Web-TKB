@@ -27,7 +27,36 @@ async function seedAdmin() {
   }
 }
 seedAdmin();
+//update lan 1 (31-59)
+function groupCourseRows(rows) {
+  const map = new Map();
 
+  for (const row of rows) {
+    if (!map.has(row.id)) {
+      map.set(row.id, {
+        id: row.id,
+        course_code: row.course_code,
+        course_name: row.course_name,
+        lecturer: row.lecturer,
+        group_name: row.group_name,
+        practice_group: row.practice_group,
+        color: row.color,
+        note: row.note,
+        schedules: []
+      });
+    }
+
+    map.get(row.id).schedules.push({
+      id: row.schedule_id,
+      day_of_week: row.day_of_week,
+      start_period: row.start_period,
+      duration: row.duration,
+      room_code: row.room_code
+    });
+  }
+
+  return Array.from(map.values());
+}
 function createToken(user) {
   return jwt.sign(
     {
@@ -117,6 +146,7 @@ app.get("/api/auth/me", authRequired, async (req, res) => {
   res.json(user);
 });
 
+
 /* ================= SLOTS ================= */
 
 app.get("/api/slots", authRequired, async (req, res) => {
@@ -170,7 +200,7 @@ app.delete("/api/slots/:period", authRequired, adminOnly, async (req, res) => {
 
 /* ================= COURSES ================= */
 
-app.get("/api/courses", authRequired, async (req, res) => {
+/*app.get("/api/courses", authRequired, async (req, res) => {
   try {
     const {
       keyword = "",
@@ -213,6 +243,89 @@ app.get("/api/courses", authRequired, async (req, res) => {
     );
 
     res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});*/
+//update lan 1 (251 - 297)
+app.get("/api/courses", authRequired, async (req, res) => {
+  try {
+    const {
+      keyword = "",
+      sortBy = "course_code",
+      sortOrder = "asc"
+    } = req.query;
+
+    const safeSortMap = {
+      course_code: "c.course_code",
+      course_name: "c.course_name",
+      lecturer: "c.lecturer"
+    };
+
+    const sortColumn = safeSortMap[sortBy] || "c.course_code";
+    const order = String(sortOrder).toLowerCase() === "desc" ? "DESC" : "ASC";
+
+    const rows = await query(
+      `SELECT
+         c.id,
+         c.course_code,
+         c.course_name,
+         c.lecturer,
+         c.group_name,
+         c.practice_group,
+         c.color,
+         c.note,
+         cs.id AS schedule_id,
+         cs.day_of_week,
+         cs.start_period,
+         cs.duration,
+         cs.room_code
+       FROM courses c
+       JOIN course_schedules cs ON cs.course_id = c.id
+       WHERE
+         c.course_code LIKE ?
+         OR c.course_name LIKE ?
+         OR c.lecturer LIKE ?
+       ORDER BY ${sortColumn} ${order}, cs.day_of_week ASC, cs.start_period ASC`,
+      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`]
+    );
+
+    res.json(groupCourseRows(rows));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//update lan 1 (300 - 332)
+app.get("/api/courses/:id", authRequired, async (req, res) => {
+  try {
+    const rows = await query(
+      `SELECT
+         c.id,
+         c.course_code,
+         c.course_name,
+         c.lecturer,
+         c.group_name,
+         c.practice_group,
+         c.color,
+         c.note,
+         cs.id AS schedule_id,
+         cs.day_of_week,
+         cs.start_period,
+         cs.duration,
+         cs.room_code
+       FROM courses c
+       JOIN course_schedules cs ON cs.course_id = c.id
+       WHERE c.id = ?
+       ORDER BY cs.day_of_week ASC, cs.start_period ASC`,
+      [req.params.id]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ message: "Không tìm thấy môn học." });
+    }
+
+    res.json(groupCourseRows(rows)[0]);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -356,7 +469,7 @@ app.get("/api/admin/conflicts", authRequired, adminOnly, async (req, res) => {
 
 /* ================= REGISTRATIONS ================= */
 
-app.get("/api/my/registrations", authRequired, async (req, res) => {
+/*app.get("/api/my/registrations", authRequired, async (req, res) => {
   try {
     const rows = await query(
       `SELECT
@@ -381,6 +494,37 @@ app.get("/api/my/registrations", authRequired, async (req, res) => {
       [req.user.id]
     );
     res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});*/
+//update lan 1 (502 - 531)
+app.get("/api/my/registrations", authRequired, async (req, res) => {
+  try {
+    const rows = await query(
+      `SELECT
+         c.id,
+         c.course_code,
+         c.course_name,
+         c.lecturer,
+         c.group_name,
+         c.practice_group,
+         c.color,
+         c.note,
+         cs.id AS schedule_id,
+         cs.day_of_week,
+         cs.start_period,
+         cs.duration,
+         cs.room_code
+       FROM registrations r
+       JOIN courses c ON c.id = r.course_id
+       JOIN course_schedules cs ON cs.course_id = c.id
+       WHERE r.user_id = ?
+       ORDER BY c.course_code ASC, cs.day_of_week ASC, cs.start_period ASC`,
+      [req.user.id]
+    );
+
+    res.json(groupCourseRows(rows));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
