@@ -631,6 +631,8 @@ tbody tr:hover {
     overflow: visible;
   }
 }
+
+
 .schedule-builder-head {
   display: flex;
   justify-content: space-between;
