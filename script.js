@@ -319,15 +319,7 @@
     }
   }
 
-  function populateStartPeriodOptions() {
-    els.startPeriod.innerHTML = state.slots.length
-      ? state.slots.map(slot => `
-          <option value="${slot.period}">
-            Tiết ${slot.period} (${escapeHtml(slot.time_label)})
-          </option>
-        `).join("")
-      : `<option value="">Chưa có tiết học</option>`;
-  }
+  
 
   function renderSlotTable() {
     if (!state.slots.length) {
@@ -654,7 +646,7 @@
     await loadSlots();
     await loadCourses();
     await loadMyRegistrations();
-    populateStartPeriodOptions();
+    
     renderSlotTable();
     renderAdminCourseTable();
     renderUserCourseOptions();
@@ -728,7 +720,7 @@
     state.mode = "user";
     localStorage.removeItem("tkb_token");
     applyAuthUI();
-    populateStartPeriodOptions();
+    
     renderSlotTable();
     renderAdminCourseTable();
     renderUserCourseOptions();
