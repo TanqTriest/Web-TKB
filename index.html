@@ -134,7 +134,7 @@
               <input type="text" id="practiceGroup" placeholder="Không có" />
             </div>
 
-            <div class="field">
+            <!--<div class="field">
               <label for="dayOfWeek">Thứ</label>
               <select id="dayOfWeek" required>
                 <option value="2">Thứ 2</option>
@@ -160,7 +160,7 @@
             <div class="field">
               <label for="roomCode">Phòng học</label>
               <input type="text" id="roomCode" required />
-            </div>
+            </div>-->
 
             <div class="field">
               <label for="courseColor">Màu hiển thị</label>
@@ -171,7 +171,15 @@
               <label for="note">Ghi chú</label>
               <textarea id="note" rows="3" placeholder="Ghi chú thêm nếu có"></textarea>
             </div>
-
+            <!--update lan 1 (174 - 181)-->
+            <div class="field field-span-2">
+              <div class="schedule-builder-head">
+                <label>Danh sách buổi học</label>
+                <button type="button" class="btn btn-primary" id="addScheduleBtn">+ Thêm buổi học</button>
+              </div>
+              <div id="scheduleRows" class="schedule-rows"></div>
+            </div>
+            
             <div class="form-actions field-span-2">
               <button type="submit" class="btn btn-primary" id="courseSubmitBtn">Lưu lớp học phần</button>
               <button type="button" class="btn btn-secondary" id="resetCourseFormBtn">Làm mới form</button>
